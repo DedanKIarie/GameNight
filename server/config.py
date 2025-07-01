@@ -38,6 +38,11 @@ app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config['JSONIFY_PRETTYPRINT_REGULAR'] = True
 app.secret_key = b'\x9a\xec\x17\xd7\x04\x9e\x9b\r\xb2\xc2\xe0\xf4\xd9\xf2\x9e\x19'
 
+# FIX: Add session cookie settings for cross-domain authentication
+app.config['SESSION_COOKIE_SAMESITE'] = 'None'
+app.config['SESSION_COOKIE_SECURE'] = True
+
+
 db = SQLAlchemy(app, metadata=metadata)
 migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
