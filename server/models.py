@@ -3,7 +3,7 @@ from sqlalchemy_serializer import SerializerMixin
 from sqlalchemy.ext.associationproxy import association_proxy
 from sqlalchemy.ext.hybrid import hybrid_property
 from config import db, bcrypt
-from datetime import datetime # Import datetime for date comparisons if needed in models
+from datetime import datetime
 
 class PlayerGame(db.Model, SerializerMixin):
     __tablename__ = 'player_games'
@@ -39,7 +39,6 @@ class Friendship(db.Model, SerializerMixin):
 
     __table_args__ = (db.UniqueConstraint('requester_id', 'recipient_id', name='_unique_friendship'),)
 
-    # REVISED: Explicitly include only necessary data for requester/recipient to prevent recursion
     serialize_rules = (
         'id', 'status',
         'requester_id', 'recipient_id',
@@ -69,7 +68,6 @@ class GameNightInvitation(db.Model, SerializerMixin):
 
     __table_args__ = (db.UniqueConstraint('game_night_id', 'invitee_id', name='_unique_game_night_invitation'),)
 
-    # REVISED: Ensure no recursion when serializing game_night or invitee
     serialize_rules = (
         'id', 'status',
         'game_night_id', 'invitee_id',
@@ -107,10 +105,9 @@ class Player(db.Model, SerializerMixin):
         accepted_received = [f.requester for f in self.received_friend_requests if f.status == 'accepted']
         return list(set(accepted_sent + accepted_received))
 
-    # REVISED: Explicitly exclude recursive relationships
     serialize_rules = (
-        'id', 'username', # Only include these basic attributes for Player serialization directly
-        '-player_games', # Exclude lists of objects
+        'id', 'username',
+        '-player_games',
         '-games',
         '-game_nights_hosted',
         '-game_night_invitations',
@@ -155,7 +152,7 @@ class Game(db.Model, SerializerMixin):
     serialize_rules = ('-player_games.game',)
 
     @validates('name')
-    def validate_name(self, key, name): # FIXED: Added 'key' and 'name' arguments
+    def validate_name(self, key, name):
         if not name:
             raise ValueError("Game name must be provided.")
         return name
@@ -167,14 +164,14 @@ class GameNight(db.Model, SerializerMixin):
     title = db.Column(db.String, nullable=False)
     location = db.Column(db.String, nullable=False)
     date = db.Column(db.DateTime, nullable=False)
+    is_public = db.Column(db.Boolean, default=False, nullable=False)
     host_id = db.Column(db.Integer, db.ForeignKey('players.id'))
 
     host = db.relationship('Player', back_populates='game_nights_hosted')
     invitations = db.relationship('GameNightInvitation', back_populates='game_night', cascade='all, delete-orphan')
 
-    # REVISED: Ensure no recursion when serializing host and invitations
     serialize_rules = (
-        'id', 'title', 'location', 'date', 'host_id',
+        'id', 'title', 'location', 'date', 'host_id', 'is_public',
         'host.username',
         'invitations.invitee.username',
         'invitations.status',
