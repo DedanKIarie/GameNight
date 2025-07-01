@@ -8,7 +8,8 @@ from sqlalchemy import MetaData
 from flask_bcrypt import Bcrypt
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
-DATABASE_URI = os.environ.get('DATABASE_URI', f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}")
+
+DATABASE_URI = os.environ.get('DATABASE_URL').replace("postgres://", "postgresql://", 1) if os.environ.get('DATABASE_URL') else f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}"
 
 metadata = MetaData(naming_convention={
     "ix": 'ix_%(column_0_label)s',
