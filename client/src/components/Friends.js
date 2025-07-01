@@ -131,7 +131,6 @@ function Friends({ player }) {
     fontWeight: 'bold',
   };
 
-  // Fetch friends, pending requests, and friends' game nights
   useEffect(() => {
     if (!player) {
       setFriends([]);
@@ -144,9 +143,9 @@ function Friends({ player }) {
       setMessage('');
       try {
         const [friendsRes, pendingRes, gameNightsRes] = await Promise.all([
-          fetch("https://gamenight-backend-a56o.onrender.com/players/me/friends"),
-          fetch("https://gamenight-backend-a56o.onrender.com/players/me/friend_requests/pending"),
-          fetch("https://gamenight-backend-a56o.onrender.com/friends_gamenights"),
+          fetch("https://gamenight-backend-a56o.onrender.com/players/me/friends", { credentials: 'include' }),
+          fetch("https://gamenight-backend-a56o.onrender.com/players/me/friend_requests/pending", { credentials: 'include' }),
+          fetch("https://gamenight-backend-a56o.onrender.com/friends_gamenights", { credentials: 'include' }),
         ]);
 
         if (friendsRes.ok) {
@@ -192,6 +191,7 @@ function Friends({ player }) {
     try {
       const response = await fetch('https://gamenight-backend-a56o.onrender.com/friend_requests', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: friendUsername }),
       });
@@ -201,7 +201,7 @@ function Friends({ player }) {
         setFriendUsername('');
         
         if (player) {
-            const pendingRes = await fetch("https://gamenight-backend-a56o.onrender.com/players/me/friend_requests/pending");
+            const pendingRes = await fetch("https://gamenight-backend-a56o.onrender.com/players/me/friend_requests/pending", { credentials: 'include' });
             if (pendingRes.ok) {
                 const updatedPending = await pendingRes.json();
                 setPendingRequests(updatedPending);
@@ -221,18 +221,18 @@ function Friends({ player }) {
     try {
       const response = await fetch(`https://gamenight-backend-a56o.onrender.com/friend_requests/${friendshipId}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: action }),
       });
       const data = await response.json();
       if (response.ok) {
         setMessage(data.message || `Friend request ${action}ed.`);
-        // Re-fetch all friend data to update lists
         if (player) {
           const [friendsRes, pendingRes, gameNightsRes] = await Promise.all([
-            fetch("https://gamenight-backend-a56o.onrender.com/players/me/friends"),
-            fetch("https://gamenight-backend-a56o.onrender.com/players/me/friend_requests/pending"),
-            fetch("https://gamenight-backend-a56o.onrender.com/friends_gamenights"),
+            fetch("https://gamenight-backend-a56o.onrender.com/players/me/friends", { credentials: 'include' }),
+            fetch("https://gamenight-backend-a56o.onrender.com/players/me/friend_requests/pending", { credentials: 'include' }),
+            fetch("https://gamenight-backend-a56o.onrender.com/friends_gamenights", { credentials: 'include' }),
           ]);
 
           if (friendsRes.ok) setFriends(await friendsRes.json());

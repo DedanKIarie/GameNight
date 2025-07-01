@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
 
-function GameList({ games, onAddGame }) {
+function GameList({ games, onAddGame, player }) {
   const [name, setName] = useState('');
   const [genre, setGenre] = useState('');
   const [message, setMessage] = useState('');
@@ -113,12 +113,13 @@ function GameList({ games, onAddGame }) {
     try {
       const response = await fetch('https://gamenight-backend-a56o.onrender.com/games', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, genre }),
       });
       const data = await response.json();
       if (response.ok) {
-        onAddGame(data); // Assuming the backend returns the new game object
+        onAddGame(data);
         setName('');
         setGenre('');
         setMessage("Game added successfully!");
@@ -148,33 +149,35 @@ function GameList({ games, onAddGame }) {
         </div>
       </div>
 
-      <div style={addFormSectionStyle}>
-        <h2 style={headingStyle}>Add a New Game</h2>
-        <form onSubmit={handleAddGameSubmit}>
-          <div style={inputGroupStyle}>
-            <label style={labelStyle}>Name</label>
-            <input
-              id="name"
-              type="text"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              style={inputStyle}
-            />
-          </div>
-          <div style={inputGroupStyle}>
-            <label style={labelStyle}>Genre</label>
-            <input
-              id="genre"
-              type="text"
-              value={genre}
-              onChange={(e) => setGenre(e.target.value)}
-              style={inputStyle}
-            />
-          </div>
-          <button type="submit" style={buttonStyle}>Add Game</button>
-          {message && <p style={messageStyle}>{message}</p>}
-        </form>
-      </div>
+      {player && (
+        <div style={addFormSectionStyle}>
+          <h2 style={headingStyle}>Add a New Game</h2>
+          <form onSubmit={handleAddGameSubmit}>
+            <div style={inputGroupStyle}>
+              <label style={labelStyle}>Name</label>
+              <input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+            <div style={inputGroupStyle}>
+              <label style={labelStyle}>Genre</label>
+              <input
+                id="genre"
+                type="text"
+                value={genre}
+                onChange={(e) => setGenre(e.target.value)}
+                style={inputStyle}
+              />
+            </div>
+            <button type="submit" style={buttonStyle}>Add Game</button>
+            {message && <p style={messageStyle}>{message}</p>}
+          </form>
+        </div>
+      )}
     </div>
   );
 }

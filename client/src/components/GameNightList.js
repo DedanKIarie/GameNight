@@ -227,8 +227,8 @@ function GameNightList({ player }) {
       setMessage('');
       try {
         const [gameNightsRes, friendsRes] = await Promise.all([
-          fetch('https://gamenight-backend-a56o.onrender.com/gamenights'),
-          player ? fetch('https://gamenight-backend-a56o.onrender.com/players/me/friends') : Promise.resolve(null),
+          fetch('https://gamenight-backend-a56o.onrender.com/gamenights', { credentials: 'include' }),
+          player ? fetch('https://gamenight-backend-a56o.onrender.com/players/me/friends', { credentials: 'include' }) : Promise.resolve(null),
         ]);
 
         if (gameNightsRes.ok) {
@@ -271,6 +271,7 @@ function GameNightList({ player }) {
     try {
       const response = await fetch('https://gamenight-backend-a56o.onrender.com/gamenights', {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ title, location, date, is_public: isPublic }),
       });
@@ -299,6 +300,7 @@ function GameNightList({ player }) {
     try {
       const response = await fetch(`https://gamenight-backend-a56o.onrender.com/gamenights/${gameNightId}`, {
         method: 'DELETE',
+        credentials: 'include',
       });
       if (response.ok) {
         setGameNights(gameNights.filter(gn => gn.id !== gameNightId));
@@ -348,6 +350,7 @@ function GameNightList({ player }) {
       try {
         const response = await fetch('https://gamenight-backend-a56o.onrender.com/gamenight_invitations', {
           method: 'POST',
+          credentials: 'include',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             game_night_id: gameNightId,
@@ -371,7 +374,7 @@ function GameNightList({ player }) {
     setShowInviteModal(null);
     setSelectedFriendsToInvite({});
 
-    const updatedGameNightsRes = await fetch('https://gamenight-backend-a56o.onrender.com/gamenights');
+    const updatedGameNightsRes = await fetch('https://gamenight-backend-a56o.onrender.com/gamenights', { credentials: 'include' });
     if (updatedGameNightsRes.ok) {
       setGameNights(await updatedGameNightsRes.json());
     }
@@ -392,10 +395,6 @@ function GameNightList({ player }) {
 
   const getProfileIcon = () => {
     return <span style={iconStyle}>&#128100;</span>;
-  };
-
-  const getGuestIcon = () => {
-    return <span style={iconStyle}>&#128101;</span>;
   };
 
   return (
@@ -420,7 +419,7 @@ function GameNightList({ player }) {
                     <div key={inv.id} style={invitedFriendItemStyle}>
                       {getInvitationStatusIcon(inv.status)}
                       {getProfileIcon()}
-                      <span style={inv.status === 'accepted' ? statusColorGreen : statusColorRed}>
+                      <span style={inv.status === 'accepted' ? statusColorGreen : inv.status === 'declined' ? statusColorRed : {}}>
                         {inv.invitee.username} ({inv.status})
                       </span>
                     </div>

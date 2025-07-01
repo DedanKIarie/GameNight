@@ -146,7 +146,7 @@ function GameDetail({ player, onUpdateGame, onDeleteGame }) {
   useEffect(() => {
     const fetchGame = async () => {
       try {
-        const response = await fetch(`https://gamenight-backend-a56o.onrender.com/games/${id}`);
+        const response = await fetch(`https://gamenight-backend-a56o.onrender.com/games/${id}`, { credentials: 'include' });
         if (response.ok) {
           const gameData = await response.json();
           setGame(gameData);
@@ -176,12 +176,13 @@ function GameDetail({ player, onUpdateGame, onDeleteGame }) {
     try {
       const response = await fetch(`https://gamenight-backend-a56o.onrender.com/games/${id}`, {
         method: 'PATCH',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name: editName, genre: editGenre }),
       });
       const data = await response.json();
       if (response.ok) {
-        onUpdateGame(data); // Assuming the backend returns the updated game object
+        onUpdateGame(data);
         setGame(data);
         setIsEditing(false);
         setMessage("Game updated successfully!");
@@ -200,6 +201,7 @@ function GameDetail({ player, onUpdateGame, onDeleteGame }) {
       try {
         const response = await fetch(`https://gamenight-backend-a56o.onrender.com/games/${id}`, {
           method: 'DELETE',
+          credentials: 'include',
         });
         if (response.ok) {
           onDeleteGame(id);
@@ -228,8 +230,9 @@ function GameDetail({ player, onUpdateGame, onDeleteGame }) {
     }
 
     try {
-      const response = await fetch(`https://gamenight-backend-a56o.onrender.com/players/me/collection`, {
+      const response = await fetch(`https://gamenight-backend-a56o.onrender.com/player_games`, {
         method: 'POST',
+        credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ game_id: game.id, condition: collectionCondition }),
       });

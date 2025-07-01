@@ -8,7 +8,9 @@ function Home({ player }) {
   useEffect(() => {
     const fetchGames = async () => {
       try {
-        const response = await fetch("https://gamenight-backend-a56o.onrender.com/games");
+        const response = await fetch("https://gamenight-backend-a56o.onrender.com/games", {
+            credentials: 'include'
+        });
         if (response.ok) {
           const gamesData = await response.json();
           setGames(gamesData);
