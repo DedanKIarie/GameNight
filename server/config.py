@@ -7,14 +7,21 @@ from flask_cors import CORS
 from sqlalchemy import MetaData
 from flask_bcrypt import Bcrypt
 
-
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
 
 DATA_DIR = '/var/data'
 
+database_url = os.environ.get('DATABASE_URL')
 
-DATABASE_URI = os.environ.get('DATABASE_URL').replace("postgres://", "postgresql://", 1) if os.environ.get('DATABASE_URL') else f"sqlite:///{os.path.join(DATA_DIR, 'app.db')}"
+
+if database_url:
+   
+    DATABASE_URI = database_url.replace("postgres://", "postgresql://", 1)
+else:
+
+    DATABASE_URI = f"sqlite:///{os.path.join(DATA_DIR, 'app.db')}"
+
 
 metadata = MetaData(naming_convention={
     "ix": 'ix_%(column_0_label)s',
