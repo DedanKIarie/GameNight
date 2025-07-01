@@ -5,7 +5,7 @@ from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
 from datetime import datetime
-from flask_migrate import Migrate, upgrade # Import upgrade
+from flask_migrate import Migrate
 
 from config import app, db, api
 from models import Player, Game, GameNight, PlayerGame, Friendship, GameNightInvitation
@@ -476,6 +476,4 @@ api.add_resource(PlayerGameNightInvitations, '/players/me/gamenight_invitations'
 
 
 if __name__ == '__main__':
-    with app.app_context():
-        upgrade()
     app.run(port=5555, debug=True)
