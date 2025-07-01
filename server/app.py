@@ -5,9 +5,13 @@ from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy import or_
 from datetime import datetime
+from flask_migrate import Migrate, upgrade # Import upgrade
 
 from config import app, db, api
 from models import Player, Game, GameNight, PlayerGame, Friendship, GameNightInvitation
+
+# Initialize Flask-Migrate
+migrate = Migrate(app, db)
 
 class Signup(Resource):
     def post(self):
@@ -124,7 +128,6 @@ class GameNights(Resource):
 
 class GameNightByID(Resource):
     def get(self, id):
-        # BUG FIX: Was Game.query.get(id), changed to GameNight.query.get(id)
         game_night = GameNight.query.get(id)
         if not game_night:
             return make_response({'error': 'Game night not found'}, 404)
@@ -471,7 +474,8 @@ api.add_resource(GameNightInvitations, '/gamenight_invitations', endpoint='gamen
 api.add_resource(GameNightInvitationManagement, '/gamenight_invitations/<int:invitation_id>', endpoint='gamenight_invitation_management')
 api.add_resource(PlayerGameNightInvitations, '/players/me/gamenight_invitations', endpoint='player_gamenight_invitations')
 
+
 if __name__ == '__main__':
     with app.app_context():
-        db.create_all()
+        upgrade()
     app.run(port=5555, debug=True)
