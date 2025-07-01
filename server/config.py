@@ -10,9 +10,8 @@ from flask_bcrypt import Bcrypt
 
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-DATA_DIR = os.path.join('/var/data')
-if not os.path.exists(DATA_DIR):
-    os.makedirs(DATA_DIR)
+
+DATA_DIR = '/var/data'
 
 
 DATABASE_URI = os.environ.get('DATABASE_URL').replace("postgres://", "postgresql://", 1) if os.environ.get('DATABASE_URL') else f"sqlite:///{os.path.join(DATA_DIR, 'app.db')}"
