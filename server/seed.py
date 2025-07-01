@@ -1,12 +1,12 @@
 from datetime import datetime
 from app import app
 from config import db
-from models import Player, Game, GameNight, PlayerGame, Friendship, GameNightInvitation # Import GameNightInvitation model
+from models import Player, Game, GameNight, PlayerGame, Friendship, GameNightInvitation
 
 def seed_data():
     with app.app_context():
         print("Clearing old data...")
-        GameNightInvitation.query.delete() # Clear invitations first
+        GameNightInvitation.query.delete()
         Friendship.query.delete() 
         PlayerGame.query.delete()
         GameNight.query.delete()
@@ -55,19 +55,22 @@ def seed_data():
             title="Strategy Sunday",
             location="p1's place",
             date=datetime(2025, 7, 20, 18, 0, 0),
-            host_id=p1.id
+            host_id=p1.id,
+            is_public=True
         )
         gn2 = GameNight(
             title="Co-op Campaign Night",
             location="p2's apartment",
             date=datetime(2025, 7, 22, 19, 30, 0),
-            host_id=p2.id
+            host_id=p2.id,
+            is_public=False
         )
         gn3 = GameNight(
             title="Scythe Showdown",
             location="p3's den",
             date=datetime(2025, 8, 1, 20, 0, 0),
-            host_id=p3.id
+            host_id=p3.id,
+            is_public=True
         )
 
         game_nights = [gn1, gn2, gn3]
@@ -84,11 +87,8 @@ def seed_data():
         db.session.commit()
 
         print("Seeding game night invitations...")
-        # Host p1 invites p2 (pending) to Strategy Sunday
         gni1 = GameNightInvitation(game_night_id=gn1.id, invitee_id=p2.id, status='pending')
-        # Host p2 invites p1 (accepted) to Co-op Campaign Night
         gni2 = GameNightInvitation(game_night_id=gn2.id, invitee_id=p1.id, status='accepted')
-        # Host p3 invites p4 (declined) to Scythe Showdown
         gni3 = GameNightInvitation(game_night_id=gn3.id, invitee_id=p4.id, status='declined')
 
         game_night_invitations = [gni1, gni2, gni3]
