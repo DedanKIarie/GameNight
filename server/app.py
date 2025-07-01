@@ -101,8 +101,31 @@ class GameByID(Resource):
 
 class GameNights(Resource):
     def get(self):
-        game_nights = [gn.to_dict(rules=('id', 'title', 'location', 'date', 'host_id', 'host.username', 'invitations.id', 'invitations.status', 'invitations.invitee.username')) for gn in GameNight.query.all()]
-        return make_response(game_nights, 200)
+        player_id = session.get('player_id')
+        all_game_nights = GameNight.query.all()
+        game_nights_list = []
+
+        for gn in all_game_nights:
+            # Add 'is_public' to the serialization rules
+            gn_dict = gn.to_dict(rules=('id', 'title', 'location', 'date', 'host_id', 'host.username', 'is_public', 'invitations.id', 'invitations.status', 'invitations.invitee.id', 'invitations.invitee.username'))
+            
+            is_host = player_id and gn.host_id == player_id
+            
+            # Check if the current user is an accepted invitee
+            is_accepted_invitee = player_id and any(
+                inv['invitee']['id'] == player_id and inv['status'] == 'accepted' 
+                for inv in gn_dict.get('invitations', [])
+            )
+
+            # Hide details if the event is private and the user is not the host or an accepted guest
+            if not gn.is_public and not is_host and not is_accepted_invitee:
+                gn_dict['location'] = '***** (Hidden)'
+                gn_dict['date'] = '***** (Hidden)'
+                gn_dict['host']['username'] = '***** (Hidden)'
+            
+            game_nights_list.append(gn_dict)
+            
+        return make_response(game_nights_list, 200)
 
     def post(self):
         player_id = session.get('player_id')
@@ -118,7 +141,8 @@ class GameNights(Resource):
                 title=data['title'],
                 location=data['location'],
                 date=date_obj,
-                host_id=player_id
+                host_id=player_id,
+                is_public=data.get('is_public', False) # FIX: Correctly handle is_public flag
             )
             db.session.add(new_game_night)
             db.session.commit()
@@ -202,7 +226,6 @@ class FriendRequests(Resource):
         if recipient.id == player_id:
             return make_response({'error': 'Cannot send friend request to self'}, 400)
         
-        # FIX: Correctly use and_ with or_ for the query
         existing_request = Friendship.query.filter(
             or_(
                 and_(Friendship.requester_id == player_id, Friendship.recipient_id == recipient.id),
@@ -451,8 +474,8 @@ class PlayerGameNightInvitations(Resource):
             return make_response({'error': 'Player not found'}, 404)
         
         invitations = [
-            inv.to_dict(rules=('id', 'status', 'game_night_id', 'game_night.title', 'game_night.date', 'game_night.location', 'game_night.host.username'))
-            for inv in player.game_night_invitations
+            inv.to_dict(rules=('id', 'status', 'game_night.id', 'game_night.title', 'game_night.date', 'game_night.location', 'game_night.host.username'))
+            for inv in player.game_night_invitations if inv.status == 'pending'
         ]
         return make_response(invitations, 200)
 

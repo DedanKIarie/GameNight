@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom';
 
 function GameNightList({ player }) {
   const [gameNights, setGameNights] = useState([]);
+  const [myInvitations, setMyInvitations] = useState([]); // State for user's invitations
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
   const [date, setDate] = useState('');
@@ -129,6 +130,15 @@ function GameNightList({ player }) {
     marginTop: '10px',
   };
 
+  const acceptButtonStyle = {
+    ...inviteButtonStyle,
+    backgroundColor: '#27ae60',
+  };
+
+  const declineButtonStyle = {
+    ...deleteButtonStyle,
+  };
+
   const messageStyle = {
     color: 'red',
     marginTop: '15px',
@@ -222,37 +232,33 @@ function GameNightList({ player }) {
     backgroundColor: '#3498db',
   };
 
+  const fetchAllData = async () => {
+    setMessage('');
+    if (!player) {
+      setGameNights([]);
+      setMyInvitations([]);
+      setFriends([]);
+      return;
+    }
+    try {
+      const [gameNightsRes, friendsRes, myInvitesRes] = await Promise.all([
+        fetch('https://gamenight-backend-a56o.onrender.com/gamenights', { credentials: 'include' }),
+        fetch('https://gamenight-backend-a56o.onrender.com/players/me/friends', { credentials: 'include' }),
+        fetch('https://gamenight-backend-a56o.onrender.com/players/me/gamenight_invitations', { credentials: 'include' }),
+      ]);
+
+      if (gameNightsRes.ok) setGameNights(await gameNightsRes.json());
+      if (friendsRes.ok) setFriends(await friendsRes.json());
+      if (myInvitesRes.ok) setMyInvitations(await myInvitesRes.json());
+
+    } catch (error) {
+      console.error("Network error fetching data:", error);
+      setMessage("Could not connect to the server.");
+    }
+  };
+
   useEffect(() => {
-    const fetchData = async () => {
-      setMessage('');
-      try {
-        const [gameNightsRes, friendsRes] = await Promise.all([
-          fetch('https://gamenight-backend-a56o.onrender.com/gamenights', { credentials: 'include' }),
-          player ? fetch('https://gamenight-backend-a56o.onrender.com/players/me/friends', { credentials: 'include' }) : Promise.resolve(null),
-        ]);
-
-        if (gameNightsRes.ok) {
-          const gnData = await gameNightsRes.json();
-          setGameNights(gnData);
-        } else {
-          const errorData = await gameNightsRes.json();
-          setMessage(errorData.error || "Failed to fetch game nights.");
-        }
-
-        if (player && friendsRes && friendsRes.ok) {
-          const friendsData = await friendsRes.json();
-          setFriends(friendsData);
-        } else if (player && friendsRes) {
-          console.error("Failed to fetch friends:", friendsRes.status);
-          setFriends([]);
-        }
-
-      } catch (error) {
-        console.error("Network error fetching data:", error);
-        setMessage("Could not connect to the server.");
-      }
-    };
-    fetchData();
+    fetchAllData();
   }, [player]);
 
   const handleCreateGameNight = async (e) => {
@@ -277,12 +283,12 @@ function GameNightList({ player }) {
       });
       const data = await response.json();
       if (response.ok) {
-        setGameNights([...gameNights, data]);
         setTitle('');
         setLocation('');
         setDate('');
         setIsPublic(false);
         setMessage("Game night created successfully!");
+        fetchAllData(); // Re-fetch all data
       } else {
         setMessage(data.error || "Failed to create game night.");
       }
@@ -303,8 +309,8 @@ function GameNightList({ player }) {
         credentials: 'include',
       });
       if (response.ok) {
-        setGameNights(gameNights.filter(gn => gn.id !== gameNightId));
         setMessage("Game night deleted successfully!");
+        fetchAllData(); // Re-fetch all data
       } else {
         const errorData = await response.json();
         setMessage(errorData.error || "Failed to delete game night.");
@@ -319,18 +325,35 @@ function GameNightList({ player }) {
     setSelectedFriendsToInvite(prev => {
       const currentSelections = prev[gameNightId] || [];
       if (currentSelections.includes(friendId)) {
-        return {
-          ...prev,
-          [gameNightId]: currentSelections.filter(id => id !== friendId)
-        };
+        return { ...prev, [gameNightId]: currentSelections.filter(id => id !== friendId) };
       } else {
-        return {
-          ...prev,
-          [gameNightId]: [...currentSelections, friendId]
-        };
+        return { ...prev, [gameNightId]: [...currentSelections, friendId] };
       }
     });
   };
+  
+  const handleInvitationAction = async (invitationId, action) => {
+    setMessage('');
+    try {
+      const response = await fetch(`https://gamenight-backend-a56o.onrender.com/gamenight_invitations/${invitationId}`, {
+        method: 'PATCH',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action: action }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setMessage(data.message || `Invitation ${action}ed.`);
+        fetchAllData(); // Re-fetch all data to update lists
+      } else {
+        setMessage(data.error || `Failed to ${action} invitation.`);
+      }
+    } catch (error) {
+      console.error("Error responding to invitation:", error);
+      setMessage("Network error during action.");
+    }
+  };
+
 
   const handleSendInvitations = async (gameNightId) => {
     setMessage('');
@@ -357,10 +380,10 @@ function GameNightList({ player }) {
             invitee_username: friendToInvite.username
           }),
         });
-        const data = await response.json();
         if (response.ok) {
           successCount++;
         } else {
+          const data = await response.json();
           failCount++;
           console.error(`Failed to invite ${friendToInvite.username}:`, data.error);
         }
@@ -373,33 +396,40 @@ function GameNightList({ player }) {
     setMessage(`Sent ${successCount} invitations, ${failCount} failed.`);
     setShowInviteModal(null);
     setSelectedFriendsToInvite({});
-
-    const updatedGameNightsRes = await fetch('https://gamenight-backend-a56o.onrender.com/gamenights', { credentials: 'include' });
-    if (updatedGameNightsRes.ok) {
-      setGameNights(await updatedGameNightsRes.json());
-    }
+    fetchAllData(); // Re-fetch all data
   };
 
   const getInvitationStatusIcon = (status) => {
     switch (status) {
-      case 'pending':
-        return <span style={{ ...iconStyle, color: '#f39c12' }} title="Pending">&#9203;</span>;
-      case 'accepted':
-        return <span style={{ ...iconStyle, color: '#27ae60' }} title="Accepted">&#10003;</span>;
-      case 'declined':
-        return <span style={{ ...iconStyle, color: '#e74c3c' }} title="Declined">&#10060;</span>;
-      default:
-        return null;
+      case 'pending': return <span style={{ ...iconStyle, color: '#f39c12' }} title="Pending">&#9203;</span>;
+      case 'accepted': return <span style={{ ...iconStyle, color: '#27ae60' }} title="Accepted">&#10003;</span>;
+      case 'declined': return <span style={{ ...iconStyle, color: '#e74c3c' }} title="Declined">&#10060;</span>;
+      default: return null;
     }
   };
 
-  const getProfileIcon = () => {
-    return <span style={iconStyle}>&#128100;</span>;
-  };
+  const getProfileIcon = () => <span style={iconStyle}>&#128100;</span>;
 
   return (
     <div style={containerStyle}>
       <div style={listSectionStyle}>
+        {player && myInvitations.length > 0 && (
+            <div style={{marginBottom: '30px'}}>
+                <h2 style={headingStyle}>My Pending Invitations</h2>
+                {myInvitations.map(inv => (
+                    <div key={inv.id} style={gameNightItemStyle}>
+                        <h3 style={gameNightTitleStyle}>{inv.game_night.title}</h3>
+                        <p style={detailTextStyle}><strong>Host:</strong> {inv.game_night.host.username}</p>
+                        <p style={detailTextStyle}><strong>Location:</strong> {inv.game_night.location}</p>
+                        <p style={detailTextStyle}><strong>Date:</strong> {new Date(inv.game_night.date).toLocaleString()}</p>
+                        <div>
+                            <button onClick={() => handleInvitationAction(inv.id, 'accept')} style={acceptButtonStyle}>Accept</button>
+                            <button onClick={() => handleInvitationAction(inv.id, 'decline')} style={declineButtonStyle}>Decline</button>
+                        </div>
+                    </div>
+                ))}
+            </div>
+        )}
         <h2 style={headingStyle}>Upcoming Game Nights</h2>
         <div>
           {gameNights.map(gn => (
@@ -429,18 +459,8 @@ function GameNightList({ player }) {
 
               {player && gn.host_id === player.id && (
                 <div>
-                  <button
-                    onClick={() => setShowInviteModal(gn.id)}
-                    style={inviteButtonStyle}
-                  >
-                    Invite Friends
-                  </button>
-                  <button
-                    onClick={() => handleDeleteGameNight(gn.id)}
-                    style={deleteButtonStyle}
-                  >
-                    Delete
-                  </button>
+                  <button onClick={() => setShowInviteModal(gn.id)} style={inviteButtonStyle}>Invite Friends</button>
+                  <button onClick={() => handleDeleteGameNight(gn.id)} style={deleteButtonStyle}>Delete</button>
                 </div>
               )}
             </div>
@@ -454,42 +474,19 @@ function GameNightList({ player }) {
           <form onSubmit={handleCreateGameNight}>
             <div style={inputGroupStyle}>
               <label style={labelStyle}>Title</label>
-              <input
-                type="text"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                style={inputStyle}
-              />
+              <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} style={inputStyle} />
             </div>
             <div style={inputGroupStyle}>
               <label style={labelStyle}>Location</label>
-              <input
-                type="text"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                style={inputStyle}
-              />
+              <input type="text" value={location} onChange={(e) => setLocation(e.target.value)} style={inputStyle} />
             </div>
             <div style={inputGroupStyle}>
               <label style={labelStyle}>Date and Time</label>
-              <input
-                type="datetime-local"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                style={inputStyle}
-              />
+              <input type="datetime-local" value={date} onChange={(e) => setDate(e.target.value)} style={inputStyle} />
             </div>
             <div style={inputGroupStyle}>
-              <input
-                type="checkbox"
-                id="isPublic"
-                checked={isPublic}
-                onChange={(e) => setIsPublic(e.target.checked)}
-                style={{ marginRight: '10px' }}
-              />
-              <label htmlFor="isPublic" style={{ display: 'inline', fontWeight: 'normal' }}>
-                Make this game night public
-              </label>
+              <input type="checkbox" id="isPublic" checked={isPublic} onChange={(e) => setIsPublic(e.target.checked)} style={{ marginRight: '10px' }} />
+              <label htmlFor="isPublic" style={{ display: 'inline', fontWeight: 'normal' }}>Make this game night public</label>
             </div>
             <button type="submit" style={buttonStyle}>Create Event</button>
             {message && <p style={messageStyle}>{message}</p>}
@@ -510,17 +507,10 @@ function GameNightList({ player }) {
                 {friends.map(friend => {
                   const gameNight = gameNights.find(gn => gn.id === showInviteModal);
                   const isInvited = gameNight?.invitations?.some(inv => inv.invitee.username === friend.username);
-
                   if (isInvited) return null;
-
                   return (
                     <div key={friend.id} style={modalFriendItemStyle}>
-                      <input
-                        type="checkbox"
-                        checked={(selectedFriendsToInvite[showInviteModal] || []).includes(friend.id)}
-                        onChange={() => handleInviteFriendToggle(showInviteModal, friend.id)}
-                        style={checkboxStyle}
-                      />
+                      <input type="checkbox" checked={(selectedFriendsToInvite[showInviteModal] || []).includes(friend.id)} onChange={() => handleInviteFriendToggle(showInviteModal, friend.id)} style={checkboxStyle} />
                       {getProfileIcon()}
                       <span>{friend.username}</span>
                     </div>
@@ -528,13 +518,7 @@ function GameNightList({ player }) {
                 })}
               </div>
             )}
-            <button
-              onClick={() => handleSendInvitations(showInviteModal)}
-              style={inviteModalButtonStyle}
-              disabled={friends.length === 0 || (selectedFriendsToInvite[showInviteModal] || []).length === 0}
-            >
-              Send Invitations
-            </button>
+            <button onClick={() => handleSendInvitations(showInviteModal)} style={inviteModalButtonStyle} disabled={friends.length === 0 || (selectedFriendsToInvite[showInviteModal] || []).length === 0}>Send Invitations</button>
             {message && <p style={messageStyle}>{message}</p>}
           </div>
         </div>
