@@ -1,10 +1,10 @@
-# 🎲 BoardGameNight
+#  BoardGameNight
 
 BoardGameNight is a full-stack web application designed to help users organize and manage board game nights with friends. Users can browse a list of games, manage their own collection, create public or private game night events, and send invitations to friends.
 
 This project demonstrates a complete PERN-stack application, featuring a React frontend that communicates with a Python/Flask API backend, all deployed on Render.
 
-## 🚀 Live Links
+##  Live Links
 
 **Frontend:** https://gamenight-tcpy.onrender.com/
 
@@ -12,7 +12,7 @@ This project demonstrates a complete PERN-stack application, featuring a React f
 
 **Please Note:** The backend is hosted on Render's free service. If it has been inactive, it may take 30-60 seconds to "wake up" and respond to the first request. Please be patient on the initial load!
 
-## ✨ Features
+##  Features
 
 - **User Authentication:** Secure user signup, login, and logout functionality. Sessions are maintained across browser restarts.
 
@@ -26,7 +26,7 @@ This project demonstrates a complete PERN-stack application, featuring a React f
 
 - **Privacy Control:** Details for private events (like location and host) are automatically hidden from users who have not been invited and accepted.
 
-## 💻 Tech Stack
+##  Tech Stack
 
 - **Frontend:** React, React Router
 - **Backend:** Python, Flask, Flask-RESTful
@@ -37,7 +37,7 @@ This project demonstrates a complete PERN-stack application, featuring a React f
 - **Authentication:** Flask-Bcrypt for password hashing, Flask sessions for state management.
 - **Deployment:** Render
 
-## 🛠️ Setup and Installation
+##  Setup and Installation
 
 To run this project on your local machine, please follow these steps.
 
@@ -122,6 +122,6 @@ A brief overview of the primary API endpoints.
 | POST | `/gamenight_invitations` | Sends a game night invitation. |
 | PATCH | `/gamenight_invitations/<id>` | Accepts or declines a game night invitation. |
 
-## ✍️ Author
+##  Author
 
 Created by: [Dedan Kiarie]
