@@ -32,7 +32,6 @@ class CheckSession(Resource):
         player_id = session.get('player_id')
         if player_id:
             player = Player.query.filter(Player.id == player_id).first()
-            # Serialize player explicitly for CheckSession to avoid recursion
             return make_response(player.to_dict(only=('id', 'username')), 200)
         return make_response({}, 204)
 
@@ -45,7 +44,6 @@ class Login(Resource):
         if player:
             if player.authenticate(password):
                 session['player_id'] = player.id
-                # Serialize player explicitly for Login to avoid recursion
                 return make_response(player.to_dict(only=('id', 'username')), 200)
         return make_response({'error': '401 Unauthorized'}, 401)
 
@@ -126,7 +124,8 @@ class GameNights(Resource):
 
 class GameNightByID(Resource):
     def get(self, id):
-        game_night = Game.query.get(id) # This should be GameNight.query.get(id)
+        # BUG FIX: Was Game.query.get(id), changed to GameNight.query.get(id)
+        game_night = GameNight.query.get(id)
         if not game_night:
             return make_response({'error': 'Game night not found'}, 404)
         return make_response(game_night.to_dict(rules=('id', 'title', 'location', 'date', 'host_id', 'host.username', 'invitations.id', 'invitations.status', 'invitations.invitee.username')), 200)
@@ -213,7 +212,7 @@ class FriendRequests(Resource):
             elif existing_request.status == 'accepted':
                 return make_response({'message': 'Already friends'}, 409)
             elif existing_request.status == 'blocked':
-                 return make_response({'message': 'User is blocked or has blocked you'}, 403)
+                return make_response({'message': 'User is blocked or has blocked you'}, 403)
         try:
             new_request = Friendship(
                 requester_id=player_id,
@@ -288,7 +287,6 @@ class PlayerFriends(Resource):
         if not player:
             return make_response({'error': 'Player not found'}, 404)
         
-        # REVISED: Manually serialize friends to avoid recursion
         friends_list = []
         for friend in player.friends:
             friends_list.append({'id': friend.id, 'username': friend.username})
@@ -305,7 +303,6 @@ class PlayerFriendRequests(Resource):
         if not player:
             return make_response({'error': 'Player not found'}, 404)
         
-        # REVISED: Manually serialize pending requests to avoid recursion
         pending_requests = []
         for req in player.received_friend_requests:
             if req.status == 'pending':
@@ -313,7 +310,7 @@ class PlayerFriendRequests(Resource):
                     'id': req.id,
                     'status': req.status,
                     'requester_id': req.requester_id,
-                    'requester': {'username': req.requester.username} # Include requester's username
+                    'requester': {'username': req.requester.username}
                 })
         return make_response(pending_requests, 200)
 
@@ -330,15 +327,14 @@ class FriendGameNights(Resource):
         friend_game_nights = []
         for friend in player.friends:
             for gn in friend.game_nights_hosted:
-                game_night_data = gn.to_dict(rules=('id', 'title', 'location', 'date', 'host_id')) # Serialize GameNight partially
-                game_night_data['host_username'] = friend.username # Add host username explicitly
+                game_night_data = gn.to_dict(rules=('id', 'title', 'location', 'date', 'host_id'))
+                game_night_data['host_username'] = friend.username
                 friend_game_nights.append(game_night_data)
         
         friend_game_nights.sort(key=lambda x: datetime.fromisoformat(x['date']), reverse=True)
 
         return make_response(friend_game_nights, 200)
 
-# New Resources for Game Night Invitations
 class GameNightInvitations(Resource):
     def post(self):
         player_id = session.get('player_id')
@@ -475,6 +471,7 @@ api.add_resource(GameNightInvitations, '/gamenight_invitations', endpoint='gamen
 api.add_resource(GameNightInvitationManagement, '/gamenight_invitations/<int:invitation_id>', endpoint='gamenight_invitation_management')
 api.add_resource(PlayerGameNightInvitations, '/players/me/gamenight_invitations', endpoint='player_gamenight_invitations')
 
-
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(port=5555, debug=True)
