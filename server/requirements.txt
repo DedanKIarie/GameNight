@@ -4,6 +4,7 @@ click==8.1.8
 Flask==3.0.3
 Flask-JWT-Extended==4.6.0
 Flask-Migrate==4.1.0
+Flask-RESTful==0.3.10  # Added Flask-RESTful
 Flask-SQLAlchemy==3.1.1
 greenlet==3.1.1
 gunicorn==23.0.0
