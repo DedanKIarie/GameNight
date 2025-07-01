@@ -90,6 +90,7 @@ function Login({ onLogin }) {
     try {
       const res = await fetch("https://gamenight-backend-a56o.onrender.com/login", {
         method: "POST",
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: loginUsername, password: loginPassword }),
       });
@@ -127,6 +128,7 @@ function Login({ onLogin }) {
     try {
       const res = await fetch("https://gamenight-backend-a56o.onrender.com/signup", {
         method: "POST",
+        credentials: 'include',
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: signupUsername, password: signupPassword }),
       });

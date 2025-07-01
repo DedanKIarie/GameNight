@@ -86,6 +86,7 @@ function Header({ player, onLogout }) {
   const handleLogoutClick = () => {
     fetch("https://gamenight-backend-a56o.onrender.com/logout", {
       method: "DELETE",
+      credentials: 'include',
     }).then(() => {
       onLogout();
       navigate("/");

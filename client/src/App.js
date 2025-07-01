@@ -13,7 +13,9 @@ function App() {
   const [games, setGames] = useState([]);
 
   useEffect(() => {
-    fetch("https://gamenight-backend-a56o.onrender.com/check_session").then((r) => {
+    fetch("https://gamenight-backend-a56o.onrender.com/check_session", {
+      credentials: 'include'
+    }).then((r) => {
       if (r.ok) {
         if (r.status === 200) {
           r.json().then((player) => setPlayer(player));
@@ -21,7 +23,9 @@ function App() {
       }
     });
 
-    fetch("https://gamenight-backend-a56o.onrender.com/games")
+    fetch("https://gamenight-backend-a56o.onrender.com/games", {
+        credentials: 'include'
+    })
       .then((r) => r.json())
       .then(setGames)
       .catch(error => console.error("Error fetching initial games:", error));
@@ -47,7 +51,7 @@ function App() {
   }
 
   function handleDeleteGame(deletedGameId) {
-    const updatedGames = games.filter(game => game.id !== deletedGameId);
+    const updatedGames = games.filter(game => game.id !== parseInt(deletedGameId));
     setGames(updatedGames);
   }
 
@@ -63,6 +67,7 @@ function App() {
                 <GameList
                     games={games}
                     onAddGame={handleAddGame}
+                    player={player}
                 />}
             />
             <Route path="/games/:id" element={
