@@ -15,12 +15,12 @@ BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 database_url = os.environ.get('DATABASE_URL')
 
 if database_url:
-    # If DATABASE_URL is set (on Render), use it.
+    # If DATABASE_URL is set (which it will be at runtime on Render), use it.
     # The .replace() is a workaround for older SQLAlchemy versions.
     DATABASE_URI = database_url.replace("postgres://", "postgresql://", 1)
 else:
-    # If DATABASE_URL is not set (for local development), fall back to a local SQLite database.
-    # This path will not be used on Render, but allows the app to run locally.
+    # If DATABASE_URL is not set (which is the case during the build on Render
+    # and for local development), fall back to a local SQLite database.
     DATABASE_URI = f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}"
 
 
