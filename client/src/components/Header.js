@@ -31,7 +31,7 @@ function Header({ player, onLogout }) {
     padding: '10px 15px',
     borderRadius: '6px',
     transition: 'background-color 0.3s ease, color 0.3s ease',
-    backgroundColor: 'transparent', // Added to ensure reset on mouse leave
+    backgroundColor: 'transparent',
   };
 
   const linkHoverStyle = {
@@ -84,7 +84,7 @@ function Header({ player, onLogout }) {
   };
 
   const handleLogoutClick = () => {
-    fetch("/logout", {
+    fetch("https://gamenight-backend-a56o.onrender.com/logout", {
       method: "DELETE",
     }).then(() => {
       onLogout();

@@ -1,13 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from 'react-router-dom';
 
-// Mock data for GameDetail to find the game
-const mockGames = [
-  { id: 1, name: "Catan", genre: "Strategy" },
-  { id: 2, name: "Ticket to Ride", genre: "Family" },
-  { id: 3, name: "Dominion", genre: "Deck-building" },
-];
-
 function GameDetail({ player, onUpdateGame, onDeleteGame }) {
   const [game, setGame] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
@@ -26,7 +19,7 @@ function GameDetail({ player, onUpdateGame, onDeleteGame }) {
     padding: '30px',
     borderRadius: '8px',
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
-    fontFamily: '"Roboto", sans-serif', // Added font
+    fontFamily: '"Roboto", sans-serif',
   };
 
   const titleStyle = {
@@ -34,7 +27,7 @@ function GameDetail({ player, onUpdateGame, onDeleteGame }) {
     fontWeight: 'bold',
     marginBottom: '10px',
     color: '#333',
-    fontFamily: '"Montserrat", sans-serif', // Added font
+    fontFamily: '"Montserrat", sans-serif',
   };
 
   const genreStyle = {
@@ -50,7 +43,7 @@ function GameDetail({ player, onUpdateGame, onDeleteGame }) {
   };
 
   const editButtonStyle = {
-    backgroundColor: '#FFC107', // Yellow for Edit
+    backgroundColor: '#FFC107',
     color: 'white',
     border: 'none',
     padding: '10px 20px',
@@ -61,7 +54,7 @@ function GameDetail({ player, onUpdateGame, onDeleteGame }) {
   };
 
   const deleteButtonStyle = {
-    backgroundColor: '#DC3545', // Red for Delete
+    backgroundColor: '#DC3545',
     color: 'white',
     border: 'none',
     padding: '10px 20px',
@@ -100,7 +93,7 @@ function GameDetail({ player, onUpdateGame, onDeleteGame }) {
   };
 
   const saveButtonStyle = {
-    backgroundColor: '#007BFF', // Blue for Save
+    backgroundColor: '#007BFF',
     color: 'white',
     border: 'none',
     padding: '10px 20px',
@@ -133,7 +126,7 @@ function GameDetail({ player, onUpdateGame, onDeleteGame }) {
   };
 
   const addToCollectionButtonStyle = {
-    backgroundColor: '#28A745', // Green for Add to Collection
+    backgroundColor: '#28A745',
     color: 'white',
     border: 'none',
     padding: '10px 20px',
@@ -150,19 +143,28 @@ function GameDetail({ player, onUpdateGame, onDeleteGame }) {
     fontSize: '14px',
   };
 
-
   useEffect(() => {
-    const foundGame = mockGames.find(g => String(g.id) === id);
-    if (foundGame) {
-      setGame(foundGame);
-      setEditName(foundGame.name);
-      setEditGenre(foundGame.genre);
-    } else {
-      setMessage("Game not found.");
-    }
+    const fetchGame = async () => {
+      try {
+        const response = await fetch(`https://gamenight-backend-a56o.onrender.com/games/${id}`);
+        if (response.ok) {
+          const gameData = await response.json();
+          setGame(gameData);
+          setEditName(gameData.name);
+          setEditGenre(gameData.genre);
+        } else {
+          const errorData = await response.json();
+          setMessage(errorData.error || "Game not found.");
+        }
+      } catch (error) {
+        console.error("Network error fetching game:", error);
+        setMessage("Could not connect to the server to fetch game details.");
+      }
+    };
+    fetchGame();
   }, [id]);
 
-  const handleEditSubmit = (e) => {
+  const handleEditSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
 
@@ -171,30 +173,77 @@ function GameDetail({ player, onUpdateGame, onDeleteGame }) {
       return;
     }
 
-    const updatedGame = { ...game, name: editName, genre: editGenre };
-    onUpdateGame(updatedGame);
-    setGame(updatedGame);
-    setIsEditing(false);
-    setMessage("Game updated successfully!");
+    try {
+      const response = await fetch(`https://gamenight-backend-a56o.onrender.com/games/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: editName, genre: editGenre }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        onUpdateGame(data); // Assuming the backend returns the updated game object
+        setGame(data);
+        setIsEditing(false);
+        setMessage("Game updated successfully!");
+      } else {
+        setMessage(data.error || "Failed to update game.");
+      }
+    } catch (error) {
+      console.error("Error updating game:", error);
+      setMessage("Network error updating game.");
+    }
   };
 
-  const handleDelete = () => {
+  const handleDelete = async () => {
     setMessage('');
     if (window.confirm('Are you sure you want to delete this game?')) {
-      onDeleteGame(id);
-      navigate("/games");
-      setMessage("Game deleted.");
+      try {
+        const response = await fetch(`https://gamenight-backend-a56o.onrender.com/games/${id}`, {
+          method: 'DELETE',
+        });
+        if (response.ok) {
+          onDeleteGame(id);
+          navigate("/games");
+          setMessage("Game deleted.");
+        } else {
+          const errorData = await response.json();
+          setMessage(errorData.error || "Failed to delete game.");
+        }
+      } catch (error) {
+        console.error("Error deleting game:", error);
+        setMessage("Network error deleting game.");
+      }
     } else {
       setMessage("Deletion cancelled.");
     }
   };
 
-  const handleAddToCollection = (e) => {
+  const handleAddToCollection = async (e) => {
     e.preventDefault();
     setMessage('');
 
-    setMessage(`Game "${game.name}" added to your collection with condition: ${collectionCondition}!`);
-    setCollectionCondition('Good');
+    if (!player) {
+      setMessage("Please log in to add games to your collection.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`https://gamenight-backend-a56o.onrender.com/players/me/collection`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ game_id: game.id, condition: collectionCondition }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        setMessage(data.message || `Game "${game.name}" added to your collection with condition: ${collectionCondition}!`);
+        setCollectionCondition('Good');
+      } else {
+        setMessage(data.error || "Failed to add game to collection.");
+      }
+    } catch (error) {
+      console.error("Error adding to collection:", error);
+      setMessage("Network error adding to collection.");
+    }
   };
 
   if (!game) return <div style={{textAlign: 'center', marginTop: '40px', fontSize: '1.2em'}}>Loading...</div>;

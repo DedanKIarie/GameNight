@@ -8,7 +8,7 @@ function Home({ player }) {
   useEffect(() => {
     const fetchGames = async () => {
       try {
-        const response = await fetch("/games");
+        const response = await fetch("https://gamenight-backend-a56o.onrender.com/games");
         if (response.ok) {
           const gamesData = await response.json();
           setGames(gamesData);
@@ -28,80 +28,80 @@ function Home({ player }) {
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
-    padding: '30px 20px', // Increased vertical padding
-    backgroundColor: '#f5f7fa', // Lighter background for a cleaner look
+    padding: '30px 20px', 
+    backgroundColor: '#f5f7fa', 
     minHeight: 'calc(100vh - 70px)',
-    fontFamily: '"Inter", sans-serif', // Changed font for a modern feel
+    fontFamily: '"Inter", sans-serif', 
   };
 
   const welcomeSectionStyle = {
     textAlign: 'center',
-    margin: '40px auto 60px auto', // Increased margins
-    padding: '35px', // Increased padding
+    margin: '40px auto 60px auto',
+    padding: '35px',
     backgroundColor: '#ffffff',
-    borderRadius: '12px', // Slightly more rounded corners
-    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)', // More pronounced and diffused shadow
-    maxWidth: '950px', // Increased max width
+    borderRadius: '12px',
+    boxShadow: '0 8px 30px rgba(0, 0, 0, 0.12)',
+    maxWidth: '950px',
     width: '100%',
-    boxSizing: 'border-box', // Ensure padding is included in width
+    boxSizing: 'border-box',
   };
 
   const titleStyle = {
-    fontSize: '3.5em', // Larger title
-    fontWeight: '800', // Extra bold
-    color: '#2d3748', // Darker, more professional text color
-    marginBottom: '20px', // Increased margin
+    fontSize: '3.5em',
+    fontWeight: '800',
+    color: '#2d3748',
+    marginBottom: '20px',
     fontFamily: '"Montserrat", sans-serif',
-    textShadow: '2px 2px 4px rgba(0,0,0,0.08)', // Softer, more defined shadow
+    textShadow: '2px 2px 4px rgba(0,0,0,0.08)',
     lineHeight: '1.2',
   };
 
   const subtitleStyle = {
-    fontSize: '1.3em', // Slightly larger subtitle
-    color: '#718096', // Softer grey
-    marginBottom: '40px', // Increased margin
+    fontSize: '1.3em',
+    color: '#718096',
+    marginBottom: '40px',
     maxWidth: '700px',
-    margin: '0 auto 40px auto', // Center and add margin
+    margin: '0 auto 40px auto',
   };
 
   const messageStyleBase = {
-    fontSize: '1.6em', // Slightly larger message
-    fontWeight: '700', // Bolder message
+    fontSize: '1.6em',
+    fontWeight: '700',
     padding: '10px 0',
   };
 
   const welcomeMessageStyle = {
     ...messageStyleBase,
-    color: '#28a745', // Standard green for success
+    color: '#28a745',
   };
 
   const promptMessageStyle = {
     ...messageStyleBase,
-    color: '#007bff', // Standard blue for prompts
+    color: '#007bff',
   };
 
   const gamesSectionStyle = {
     width: '100%',
-    maxWidth: '1280px', // Increased max width
-    padding: '40px 0', // Increased padding
+    maxWidth: '1280px',
+    padding: '40px 0',
     textAlign: 'center',
   };
 
   const gamesHeadingStyle = {
-    fontSize: '2.8em', // Larger heading
-    fontWeight: '800', // Extra bold
+    fontSize: '2.8em',
+    fontWeight: '800',
     color: '#2d3748',
-    marginBottom: '40px', // Increased margin
+    marginBottom: '40px',
     fontFamily: '"Montserrat", sans-serif',
     textShadow: '1px 1px 3px rgba(0,0,0,0.05)',
   };
 
   const gamesGridStyle = {
     display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', // Slightly larger min-width for cards
-    gap: '30px', // Increased gap
+    gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+    gap: '30px',
     justifyContent: 'center',
-    padding: '0 20px', // Padding for grid
+    padding: '0 20px',
   };
 
   const gameCardStyle = {
@@ -110,72 +110,72 @@ function Home({ player }) {
     boxShadow: '0 6px 20px rgba(0, 0, 0, 0.08)',
     overflow: 'hidden',
     transition: 'transform 0.3s ease-in-out, box-shadow 0.3s ease-in-out',
-    padding: '25px', // Increased padding
+    padding: '25px',
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',
     textAlign: 'center',
-    border: '1px solid #e2e8f0', // Subtle border
-    transform: 'translateY(0) scale(1)', // Explicitly set initial transform
+    border: '1px solid #e2e8f0',
+    transform: 'translateY(0) scale(1)',
   };
 
   const gameCardHoverStyle = {
-    transform: 'translateY(-8px) scale(1.02)', // More pronounced lift and slight scale
-    boxShadow: '0 12px 35px rgba(0, 0, 0, 0.18)', // Stronger shadow on hover
+    transform: 'translateY(-8px) scale(1.02)',
+    boxShadow: '0 12px 35px rgba(0, 0, 0, 0.18)',
   };
 
   const gameImageStyle = {
-    width: '180px', // Larger image
+    width: '180px',
     height: '180px',
     objectFit: 'cover',
-    borderRadius: '10px', // More rounded image corners
-    marginBottom: '20px', // Increased margin
-    border: '3px solid #cbd5e0', // More visible border
-    transition: 'transform 0.3s ease', // Smooth image scale on hover
-    transform: 'scale(1)', // Explicitly set initial transform
+    borderRadius: '10px',
+    marginBottom: '20px',
+    border: '3px solid #cbd5e0',
+    transition: 'transform 0.3s ease',
+    transform: 'scale(1)',
   };
 
   const gameImageHoverStyle = {
-    transform: 'scale(1.05)', // Slight scale on image hover
+    transform: 'scale(1.05)',
   };
 
   const gameTitleCardStyle = {
-    fontSize: '1.8em', // Larger title
+    fontSize: '1.8em',
     fontWeight: '700',
     color: '#2d3748',
     marginBottom: '10px',
   };
 
   const gameGenreCardStyle = {
-    fontSize: '1.1em', // Slightly larger genre text
+    fontSize: '1.1em',
     color: '#718096',
-    marginBottom: '20px', // Increased margin
+    marginBottom: '20px',
   };
 
   const viewDetailsLinkStyle = {
     display: 'inline-block',
     backgroundColor: '#3498db',
     color: 'white',
-    padding: '12px 25px', // More padding for button
-    borderRadius: '8px', // More rounded button
+    padding: '12px 25px',
+    borderRadius: '8px',
     textDecoration: 'none',
     fontWeight: 'bold',
-    fontSize: '1.1em', // Larger font for button
-    transition: 'background-color 0.3s ease, transform 0.2s ease', // Added transform transition
-    transform: 'translateY(0)', // Explicitly set initial transform
+    fontSize: '1.1em',
+    transition: 'background-color 0.3s ease, transform 0.2s ease',
+    transform: 'translateY(0)',
   };
 
   const viewDetailsLinkHoverStyle = {
     backgroundColor: '#2980b9',
-    transform: 'translateY(-2px)', // Slight lift on hover
+    transform: 'translateY(-2px)',
   };
 
   const welcomeImageStyle = {
     width: '100%',
-    maxWidth: '500px', // Larger max width for the image
+    maxWidth: '500px',
     height: 'auto',
     borderRadius: '12px',
-    marginBottom: '30px', // Increased margin
+    marginBottom: '30px',
     boxShadow: '0 6px 15px rgba(0,0,0,0.1)',
   };
 
@@ -183,7 +183,7 @@ function Home({ player }) {
     <div style={containerStyle}>
       <div style={welcomeSectionStyle}>
         <img
-          src="https://placehold.co/500x250/667eea/ffffff?text=Game+Night+Fun" // Updated placeholder image with a nicer color
+          src="https://placehold.co/500x250/667eea/ffffff?text=Game+Night+Fun"
           alt="Board Game Night"
           style={welcomeImageStyle}
         />
@@ -217,7 +217,6 @@ function Home({ player }) {
                 Object.assign(e.currentTarget.querySelector('img').style, gameImageHoverStyle);
               }}
               onMouseLeave={(e) => {
-                // Revert to original styles by explicitly setting properties
                 e.currentTarget.style.transform = gameCardStyle.transform;
                 e.currentTarget.style.boxShadow = gameCardStyle.boxShadow;
                 e.currentTarget.querySelector('img').style.transform = gameImageStyle.transform;

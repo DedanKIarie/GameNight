@@ -11,7 +11,7 @@ function GameList({ games, onAddGame }) {
     gridTemplateColumns: '1fr 1fr',
     gap: '30px',
     padding: '20px',
-    fontFamily: '"Roboto", sans-serif', // Added font
+    fontFamily: '"Roboto", sans-serif',
   };
 
   const listSectionStyle = {
@@ -33,7 +33,7 @@ function GameList({ games, onAddGame }) {
     fontWeight: 'bold',
     marginBottom: '20px',
     color: '#333',
-    fontFamily: '"Montserrat", sans-serif', // Added font
+    fontFamily: '"Montserrat", sans-serif',
   };
 
   const gameItemStyle = {
@@ -101,7 +101,7 @@ function GameList({ games, onAddGame }) {
     fontSize: '14px',
   };
 
-  const handleAddGameSubmit = (e) => {
+  const handleAddGameSubmit = async (e) => {
     e.preventDefault();
     setMessage('');
 
@@ -110,11 +110,25 @@ function GameList({ games, onAddGame }) {
       return;
     }
 
-    const newGame = { id: games.length + 1, name, genre };
-    onAddGame(newGame);
-    setName('');
-    setGenre('');
-    setMessage("Game added successfully!");
+    try {
+      const response = await fetch('https://gamenight-backend-a56o.onrender.com/games', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, genre }),
+      });
+      const data = await response.json();
+      if (response.ok) {
+        onAddGame(data); // Assuming the backend returns the new game object
+        setName('');
+        setGenre('');
+        setMessage("Game added successfully!");
+      } else {
+        setMessage(data.error || "Failed to add game.");
+      }
+    } catch (error) {
+      console.error("Error adding game:", error);
+      setMessage("Network error adding game.");
+    }
   };
 
   return (

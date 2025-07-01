@@ -15,7 +15,7 @@ function Login({ onLogin }) {
     alignItems: 'center',
     padding: '20px',
     backgroundColor: '#f4f4f4',
-    minHeight: '100vh', // Ensure it takes full viewport height
+    minHeight: '100vh',
   };
 
   const sectionStyle = {
@@ -25,7 +25,7 @@ function Login({ onLogin }) {
     boxShadow: '0 4px 12px rgba(0, 0, 0, 0.1)',
     marginBottom: '30px',
     width: '100%',
-    maxWidth: '400px', // Limit width for better readability on large screens
+    maxWidth: '400px',
     textAlign: 'center',
   };
 
@@ -42,7 +42,7 @@ function Login({ onLogin }) {
   };
 
   const inputStyle = {
-    width: 'calc(100% - 20px)', // Full width minus padding
+    width: 'calc(100% - 20px)',
     padding: '10px',
     border: '1px solid #ddd',
     borderRadius: '4px',
@@ -62,13 +62,13 @@ function Login({ onLogin }) {
 
   const loginButtonStyle = {
     ...buttonStyle,
-    backgroundColor: '#4CAF50', // Green for Login
+    backgroundColor: '#4CAF50',
     color: 'white',
   };
 
   const signupButtonStyle = {
     ...buttonStyle,
-    backgroundColor: '#008CBA', // Blue for Sign Up
+    backgroundColor: '#008CBA',
     color: 'white',
   };
 
@@ -88,7 +88,7 @@ function Login({ onLogin }) {
     }
 
     try {
-      const res = await fetch("/login", {
+      const res = await fetch("https://gamenight-backend-a56o.onrender.com/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: loginUsername, password: loginPassword }),
@@ -125,7 +125,7 @@ function Login({ onLogin }) {
     }
 
     try {
-      const res = await fetch("/signup", {
+      const res = await fetch("https://gamenight-backend-a56o.onrender.com/signup", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ username: signupUsername, password: signupPassword }),

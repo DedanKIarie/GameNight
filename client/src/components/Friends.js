@@ -144,9 +144,9 @@ function Friends({ player }) {
       setMessage('');
       try {
         const [friendsRes, pendingRes, gameNightsRes] = await Promise.all([
-          fetch("/players/me/friends"),
-          fetch("/players/me/friend_requests/pending"),
-          fetch("/friends_gamenights"),
+          fetch("https://gamenight-backend-a56o.onrender.com/players/me/friends"),
+          fetch("https://gamenight-backend-a56o.onrender.com/players/me/friend_requests/pending"),
+          fetch("https://gamenight-backend-a56o.onrender.com/friends_gamenights"),
         ]);
 
         if (friendsRes.ok) {
@@ -190,7 +190,7 @@ function Friends({ player }) {
       return;
     }
     try {
-      const response = await fetch('/friend_requests', {
+      const response = await fetch('https://gamenight-backend-a56o.onrender.com/friend_requests', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username: friendUsername }),
@@ -199,9 +199,9 @@ function Friends({ player }) {
       if (response.ok) {
         setMessage(data.message || 'Friend request sent!');
         setFriendUsername('');
-        // Re-fetch pending requests or update state to reflect new request
-        if (player) { // Only if logged in
-            const pendingRes = await fetch("/players/me/friend_requests/pending");
+        
+        if (player) {
+            const pendingRes = await fetch("https://gamenight-backend-a56o.onrender.com/players/me/friend_requests/pending");
             if (pendingRes.ok) {
                 const updatedPending = await pendingRes.json();
                 setPendingRequests(updatedPending);
@@ -219,7 +219,7 @@ function Friends({ player }) {
   const handleFriendRequestAction = async (friendshipId, action) => {
     setMessage('');
     try {
-      const response = await fetch(`/friend_requests/${friendshipId}`, {
+      const response = await fetch(`https://gamenight-backend-a56o.onrender.com/friend_requests/${friendshipId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ action: action }),
@@ -230,9 +230,9 @@ function Friends({ player }) {
         // Re-fetch all friend data to update lists
         if (player) {
           const [friendsRes, pendingRes, gameNightsRes] = await Promise.all([
-            fetch("/players/me/friends"),
-            fetch("/players/me/friend_requests/pending"),
-            fetch("/friends_gamenights"),
+            fetch("https://gamenight-backend-a56o.onrender.com/players/me/friends"),
+            fetch("https://gamenight-backend-a56o.onrender.com/players/me/friend_requests/pending"),
+            fetch("https://gamenight-backend-a56o.onrender.com/friends_gamenights"),
           ]);
 
           if (friendsRes.ok) setFriends(await friendsRes.json());
@@ -286,7 +286,6 @@ function Friends({ player }) {
             {friends.map(friend => (
               <div key={friend.id} style={listItemStyle}>
                 <span>{friend.username}</span>
-                {/* Add options like 'Unfriend' here if desired */}
               </div>
             ))}
           </div>

@@ -6,7 +6,7 @@ function GameNightList({ player }) {
   const [title, setTitle] = useState('');
   const [location, setLocation] = useState('');
   const [date, setDate] = useState('');
-  const [isPublic, setIsPublic] = useState(false); // New state for public/private
+  const [isPublic, setIsPublic] = useState(false);
   const [message, setMessage] = useState('');
   const [friends, setFriends] = useState([]);
   const [selectedFriendsToInvite, setSelectedFriendsToInvite] = useState({});
@@ -56,7 +56,7 @@ function GameNightList({ player }) {
     borderRadius: '8px',
     boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
     marginBottom: '15px',
-    position: 'relative', // For positioning the delete button
+    position: 'relative',
   };
 
   const gameNightTitleStyle = {
@@ -114,7 +114,7 @@ function GameNightList({ player }) {
     fontWeight: 'bold',
     fontSize: '0.9em',
     marginTop: '10px',
-    marginRight: '10px', // Added margin for delete button
+    marginRight: '10px',
   };
 
   const deleteButtonStyle = {
@@ -227,8 +227,8 @@ function GameNightList({ player }) {
       setMessage('');
       try {
         const [gameNightsRes, friendsRes] = await Promise.all([
-          fetch('/gamenights'),
-          player ? fetch('/players/me/friends') : Promise.resolve(null),
+          fetch('https://gamenight-backend-a56o.onrender.com/gamenights'),
+          player ? fetch('https://gamenight-backend-a56o.onrender.com/players/me/friends') : Promise.resolve(null),
         ]);
 
         if (gameNightsRes.ok) {
@@ -269,10 +269,10 @@ function GameNightList({ player }) {
     }
 
     try {
-      const response = await fetch('/gamenights', {
+      const response = await fetch('https://gamenight-backend-a56o.onrender.com/gamenights', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title, location, date, is_public: isPublic }), // Send isPublic
+        body: JSON.stringify({ title, location, date, is_public: isPublic }),
       });
       const data = await response.json();
       if (response.ok) {
@@ -280,7 +280,7 @@ function GameNightList({ player }) {
         setTitle('');
         setLocation('');
         setDate('');
-        setIsPublic(false); // Reset public/private checkbox
+        setIsPublic(false);
         setMessage("Game night created successfully!");
       } else {
         setMessage(data.error || "Failed to create game night.");
@@ -297,7 +297,7 @@ function GameNightList({ player }) {
     }
     setMessage('');
     try {
-      const response = await fetch(`/gamenights/${gameNightId}`, {
+      const response = await fetch(`https://gamenight-backend-a56o.onrender.com/gamenights/${gameNightId}`, {
         method: 'DELETE',
       });
       if (response.ok) {
@@ -346,7 +346,7 @@ function GameNightList({ player }) {
       if (!friendToInvite) continue;
 
       try {
-        const response = await fetch('/gamenight_invitations', {
+        const response = await fetch('https://gamenight-backend-a56o.onrender.com/gamenight_invitations', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
@@ -371,7 +371,7 @@ function GameNightList({ player }) {
     setShowInviteModal(null);
     setSelectedFriendsToInvite({});
 
-    const updatedGameNightsRes = await fetch('/gamenights');
+    const updatedGameNightsRes = await fetch('https://gamenight-backend-a56o.onrender.com/gamenights');
     if (updatedGameNightsRes.ok) {
       setGameNights(await updatedGameNightsRes.json());
     }

@@ -8,18 +8,12 @@ import GameDetail from "./components/GameDetail";
 import GameNightList from "./components/GameNightList";
 import Friends from "./components/Friends";
 
-const mockGames = [
-  { id: 1, name: "Catan", genre: "Strategy" },
-  { id: 2, name: "Ticket to Ride", genre: "Family" },
-  { id: 3, name: "Dominion", genre: "Deck-building" },
-];
-
 function App() {
   const [player, setPlayer] = useState(null);
-  const [games, setGames] = useState(mockGames);
+  const [games, setGames] = useState([]);
 
   useEffect(() => {
-    fetch("/check_session").then((r) => {
+    fetch("https://gamenight-backend-a56o.onrender.com/check_session").then((r) => {
       if (r.ok) {
         if (r.status === 200) {
           r.json().then((player) => setPlayer(player));
@@ -27,7 +21,7 @@ function App() {
       }
     });
 
-    fetch("/games")
+    fetch("https://gamenight-backend-a56o.onrender.com/games")
       .then((r) => r.json())
       .then(setGames)
       .catch(error => console.error("Error fetching initial games:", error));
