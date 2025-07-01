@@ -7,20 +7,25 @@ from flask_cors import CORS
 from sqlalchemy import MetaData
 from flask_bcrypt import Bcrypt
 
+# Define the base directory of the application
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
+# Check if the application is running on Render
+IS_ON_RENDER = os.environ.get('RENDER') == 'true'
 
-DATA_DIR = '/var/data'
-
-database_url = os.environ.get('DATABASE_URL')
-
-
-if database_url:
-   
+DATABASE_URI = ""
+if IS_ON_RENDER:
+    # If on Render, get the database URL from the environment variables
+    database_url = os.environ.get('DATABASE_URL')
+    if not database_url:
+        # If the DATABASE_URL is not set, raise a clear error
+        raise RuntimeError("FATAL: DATABASE_URL environment variable is not set on Render.")
+    
+    # Use the provided PostgreSQL URL and replace the scheme for SQLAlchemy compatibility
     DATABASE_URI = database_url.replace("postgres://", "postgresql://", 1)
 else:
-
-    DATABASE_URI = f"sqlite:///{os.path.join(DATA_DIR, 'app.db')}"
+    # If not on Render (i.e., local development), use a local SQLite database
+    DATABASE_URI = f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}"
 
 
 metadata = MetaData(naming_convention={
@@ -42,5 +47,5 @@ migrate = Migrate(app, db)
 bcrypt = Bcrypt(app)
 api = Api(app)
 
-
+# Configure CORS to allow credentials from your frontend's origin
 CORS(app, supports_credentials=True, resources={r"/*": {"origins": "https://gamenight-tcpy.onrender.com"}})
