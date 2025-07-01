@@ -3,7 +3,7 @@
 from flask import request, session, make_response
 from flask_restful import Resource
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy import or_
+from sqlalchemy import or_, and_ # Import and_
 from datetime import datetime
 from flask_migrate import Migrate
 
@@ -202,10 +202,11 @@ class FriendRequests(Resource):
         if recipient.id == player_id:
             return make_response({'error': 'Cannot send friend request to self'}, 400)
         
+        # FIX: Correctly use and_ with or_ for the query
         existing_request = Friendship.query.filter(
             or_(
-                (Friendship.requester_id == player_id, Friendship.recipient_id == recipient.id),
-                (Friendship.requester_id == recipient.id, Friendship.recipient_id == player_id)
+                and_(Friendship.requester_id == player_id, Friendship.recipient_id == recipient.id),
+                and_(Friendship.requester_id == recipient.id, Friendship.recipient_id == player_id)
             )
         ).first()
 
