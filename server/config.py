@@ -10,21 +10,17 @@ from flask_bcrypt import Bcrypt
 # Define the base directory of the application
 BASE_DIR = os.path.abspath(os.path.dirname(__file__))
 
-# Check if the application is running on Render
-IS_ON_RENDER = os.environ.get('RENDER') == 'true'
+# Get the database URL from the environment.
+# This is the standard way to handle database connections in production.
+database_url = os.environ.get('DATABASE_URL')
 
-DATABASE_URI = ""
-if IS_ON_RENDER:
-    # If on Render, get the database URL from the environment variables
-    database_url = os.environ.get('DATABASE_URL')
-    if not database_url:
-        # If the DATABASE_URL is not set, raise a clear error
-        raise RuntimeError("FATAL: DATABASE_URL environment variable is not set on Render.")
-    
-    # Use the provided PostgreSQL URL and replace the scheme for SQLAlchemy compatibility
+if database_url:
+    # If DATABASE_URL is set (on Render), use it.
+    # The .replace() is a workaround for older SQLAlchemy versions.
     DATABASE_URI = database_url.replace("postgres://", "postgresql://", 1)
 else:
-    # If not on Render (i.e., local development), use a local SQLite database
+    # If DATABASE_URL is not set (for local development), fall back to a local SQLite database.
+    # This path will not be used on Render, but allows the app to run locally.
     DATABASE_URI = f"sqlite:///{os.path.join(BASE_DIR, 'app.db')}"
 
 
